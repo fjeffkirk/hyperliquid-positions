@@ -1,5 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { isValidEthAddress, copyToClipboard } from '../lib/utils';
+import { getSavedAddresses, addSavedAddress, removeSavedAddress, truncateAddress, type SavedAddress } from '../lib/savedAddresses';
+import Chip from '@mui/material/Chip';
+import Stack from '@mui/material/Stack';
 
 interface AddressInputProps {
   onSubmit: (address: string) => void;
@@ -21,6 +24,12 @@ export default function AddressInput({
   const [address, setAddress] = useState(currentAddress || '');
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+
+  // Load saved addresses on mount
+  useEffect(() => {
+    setSavedAddresses(getSavedAddresses());
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +45,21 @@ export default function AddressInput({
       return;
     }
 
+    // Save address and update list
+    const updated = addSavedAddress(address.trim());
+    setSavedAddresses(updated);
+
     onSubmit(address.trim());
+  };
+
+  const handleChipClick = (chipAddress: string) => {
+    setAddress(chipAddress);
+    onSubmit(chipAddress);
+  };
+
+  const handleChipDelete = (chipAddress: string) => {
+    const updated = removeSavedAddress(chipAddress);
+    setSavedAddresses(updated);
   };
 
   const handleShareLink = async () => {
@@ -167,6 +190,49 @@ export default function AddressInput({
           )}
         </div>
       </form>
+
+      {/* Saved Addresses Chips */}
+      {savedAddresses.length > 0 && (
+        <div className="mt-4 pt-3 border-t border-gray-700">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs text-gray-400">Saved Addresses:</span>
+          </div>
+          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+            {savedAddresses.map((saved) => (
+              <Chip
+                key={saved.address}
+                label={truncateAddress(saved.address)}
+                onClick={() => handleChipClick(saved.address)}
+                onDelete={() => handleChipDelete(saved.address)}
+                disabled={loading}
+                sx={{
+                  backgroundColor: currentAddress?.toLowerCase() === saved.address.toLowerCase() 
+                    ? '#3b82f6' 
+                    : '#374151',
+                  color: '#ffffff',
+                  fontFamily: 'monospace',
+                  fontSize: '0.75rem',
+                  '&:hover': {
+                    backgroundColor: currentAddress?.toLowerCase() === saved.address.toLowerCase()
+                      ? '#2563eb'
+                      : '#4b5563',
+                  },
+                  '& .MuiChip-deleteIcon': {
+                    color: '#9ca3af',
+                    '&:hover': {
+                      color: '#ef4444',
+                    },
+                  },
+                  transition: 'all 0.2s',
+                  cursor: 'pointer',
+                  marginBottom: '0.5rem',
+                }}
+                size="small"
+              />
+            ))}
+          </Stack>
+        </div>
+      )}
     </div>
   );
 }

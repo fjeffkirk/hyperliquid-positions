@@ -1,4 +1,3 @@
-import React from 'react';
 import { formatNumber, formatUSD, getColorClass } from '../lib/utils';
 import type { Position } from '../lib/hyperliquid';
 

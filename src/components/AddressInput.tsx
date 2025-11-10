@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { isValidEthAddress, copyToClipboard } from '../lib/utils';
 
 interface AddressInputProps {

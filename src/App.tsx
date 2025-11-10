@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import AddressInput from './components/AddressInput';
 import AccountSummary from './components/AccountSummary';
 import PositionCard from './components/PositionCard';
@@ -182,45 +182,15 @@ function App() {
 
             {accountState && (
               <>
-                {/* Desktop: Grid Layout, Mobile: Stack */}
-                <div className="lg:grid lg:grid-cols-2 lg:gap-4 lg:mb-4">
-                  {/* Account Summary */}
-                  <div className="lg:col-span-1">
-                    <AccountSummary
-                      equity={accountState.equity}
-                      marginUsed={accountState.marginUsed}
-                      lastUpdated={lastUpdated}
-                      address={address || ''}
-                    />
-                  </div>
-
-                  {/* Total uPnL Summary - Desktop only shows here */}
-                  {accountState.positions.some((p) => p.uPnl !== undefined) && (
-                    <div className="hidden lg:block lg:col-span-1">
-                      <div className="bg-gradient-to-r from-gray-800 to-gray-700 rounded-lg shadow-lg p-4 h-full border-2 border-gray-600 flex flex-col justify-center">
-                        <div className="text-center">
-                          <div className="text-gray-300 text-sm font-medium mb-2">Total uPnL</div>
-                          <div
-                            className={`text-3xl font-bold tabular-nums ${
-                              accountState.positions.reduce((sum, p) => sum + (p.uPnl || 0), 0) > 0
-                                ? 'text-green-400'
-                                : accountState.positions.reduce((sum, p) => sum + (p.uPnl || 0), 0) < 0
-                                ? 'text-red-400'
-                                : 'text-white'
-                            }`}
-                          >
-                            $
-                            {accountState.positions
-                              .reduce((sum, p) => sum + (p.uPnl || 0), 0)
-                              .toLocaleString('en-US', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                {/* Account Summary - Full Width */}
+                <div className="mb-4">
+                  <AccountSummary
+                    equity={accountState.equity}
+                    marginUsed={accountState.marginUsed}
+                    lastUpdated={lastUpdated}
+                    address={address || ''}
+                    totalUPnl={accountState.positions.reduce((sum, p) => sum + (p.uPnl || 0), 0)}
+                  />
                 </div>
 
                 {accountState.positions.length === 0 ? (
@@ -239,32 +209,6 @@ function App() {
                         <PositionCard key={`${position.symbol}-${index}`} position={position} />
                       ))}
                     </div>
-
-                    {/* Total uPnL Summary - Mobile only */}
-                    {accountState.positions.some((p) => p.uPnl !== undefined) && (
-                      <div className="lg:hidden bg-gradient-to-r from-gray-800 to-gray-700 rounded-lg shadow-lg p-6 mt-6 border-2 border-gray-600">
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-200 text-xl font-bold">Total uPnL:</span>
-                          <span
-                            className={`text-3xl font-bold tabular-nums ${
-                              accountState.positions.reduce((sum, p) => sum + (p.uPnl || 0), 0) > 0
-                                ? 'text-green-400'
-                                : accountState.positions.reduce((sum, p) => sum + (p.uPnl || 0), 0) < 0
-                                ? 'text-red-400'
-                                : 'text-white'
-                            }`}
-                          >
-                            $
-                            {accountState.positions
-                              .reduce((sum, p) => sum + (p.uPnl || 0), 0)
-                              .toLocaleString('en-US', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
-                          </span>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 )}
               </>

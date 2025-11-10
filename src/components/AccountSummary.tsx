@@ -1,4 +1,3 @@
-import React from 'react';
 import { formatUSD } from '../lib/utils';
 
 interface AccountSummaryProps {
@@ -6,9 +5,10 @@ interface AccountSummaryProps {
   marginUsed: number;
   lastUpdated: Date | null;
   address: string;
+  totalUPnl?: number;
 }
 
-export default function AccountSummary({ equity, marginUsed, lastUpdated, address }: AccountSummaryProps) {
+export default function AccountSummary({ equity, marginUsed, lastUpdated, address, totalUPnl }: AccountSummaryProps) {
   const availableMargin = equity - marginUsed;
   const marginUsedPercent = equity > 0 ? (marginUsed / equity) * 100 : 0;
 
@@ -81,6 +81,18 @@ export default function AccountSummary({ equity, marginUsed, lastUpdated, addres
           </div>
         )}
       </div>
+
+      {/* Total uPnL - Prominent Display */}
+      {totalUPnl !== undefined && (
+        <div className="mt-3 pt-3 border-t-2 border-gray-700">
+          <div className="flex justify-between items-center">
+            <span className="text-gray-300 font-bold text-base lg:text-sm">Total uPnL:</span>
+            <span className={`${getValueColor(totalUPnl)} font-bold tabular-nums text-xl lg:text-lg`}>
+              {formatUSD(totalUPnl)}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

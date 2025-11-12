@@ -3,10 +3,14 @@ import AddressInput from './components/AddressInput';
 import AccountSummary from './components/AccountSummary';
 import PositionCard from './components/PositionCard';
 import PositionFilters, { type SortBy, type SortOrder, type FilterSide } from './components/PositionFilters';
+import Leaderboard from './components/Leaderboard';
 import { fetchClearinghouseState, fetchAllMids, calculateUPnl, type AccountState, type Position } from './lib/hyperliquid';
 import { fetchPricesForSymbols as fetchCoinbasePrices } from './lib/coinbase';
 import { fetchPricesForSymbols as fetchCoinGeckoPrices } from './lib/coingecko';
 import { getAddressFromHash, setAddressInHash } from './lib/utils';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
 
 function App() {
   const [address, setAddress] = useState<string | null>(null);
@@ -21,6 +25,9 @@ function App() {
   const [sortBy, setSortBy] = useState<SortBy>('pnl');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [filterSide, setFilterSide] = useState<FilterSide>('all');
+  
+  // Tab state
+  const [selectedTab, setSelectedTab] = useState<number>(0);
 
   // Load address from URL hash on mount
   useEffect(() => {
@@ -151,6 +158,16 @@ function App() {
     }
   };
 
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setSelectedTab(newValue);
+  };
+
+  const handleLeaderboardAddressClick = (leaderboardAddress: string) => {
+    // Switch to Account Summary tab and load that address
+    setSelectedTab(0);
+    fetchPositions(leaderboardAddress);
+  };
+
   // Filter and sort positions
   const filteredAndSortedPositions = useMemo(() => {
     if (!accountState) return [];
@@ -222,7 +239,35 @@ function App() {
               </div>
             )}
 
-            {accountState && (
+            {/* Tab Navigation */}
+            <Box sx={{ borderBottom: 1, borderColor: '#374151', mb: 3 }}>
+              <Tabs
+                value={selectedTab}
+                onChange={handleTabChange}
+                sx={{
+                  '& .MuiTab-root': {
+                    color: '#9ca3af',
+                    fontWeight: 600,
+                    fontSize: '0.875rem',
+                    textTransform: 'none',
+                    minHeight: '48px',
+                    '&.Mui-selected': {
+                      color: '#3b82f6',
+                    },
+                  },
+                  '& .MuiTabs-indicator': {
+                    backgroundColor: '#3b82f6',
+                    height: '3px',
+                  },
+                }}
+              >
+                <Tab label="Account Summary" />
+                <Tab label="Hyperliquid Leaderboard" />
+              </Tabs>
+            </Box>
+
+            {/* Tab Content */}
+            {selectedTab === 0 && accountState && (
               <>
                 {/* Account Summary - Full Width */}
                 <div className="mb-4">
@@ -269,6 +314,11 @@ function App() {
                   </div>
                 )}
               </>
+            )}
+
+            {/* Leaderboard Tab */}
+            {selectedTab === 1 && (
+              <Leaderboard onAddressClick={handleLeaderboardAddressClick} />
             )}
 
             {/* Footer */}

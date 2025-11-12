@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import AddressInput from './components/AddressInput';
 import AccountSummary from './components/AccountSummary';
 import PositionCard from './components/PositionCard';
+import PositionFilters, { type SortBy, type SortOrder, type FilterSide } from './components/PositionFilters';
 import { fetchClearinghouseState, fetchAllMids, calculateUPnl, type AccountState, type Position } from './lib/hyperliquid';
 import { fetchPricesForSymbols as fetchCoinbasePrices } from './lib/coinbase';
 import { fetchPricesForSymbols as fetchCoinGeckoPrices } from './lib/coingecko';
@@ -15,6 +16,11 @@ function App() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isPolling, setIsPolling] = useState(false);
   const [usingCoinGecko, setUsingCoinGecko] = useState(false);
+  
+  // Filter and sort state
+  const [sortBy, setSortBy] = useState<SortBy>('pnl');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [filterSide, setFilterSide] = useState<FilterSide>('all');
 
   // Load address from URL hash on mount
   useEffect(() => {
@@ -145,6 +151,42 @@ function App() {
     }
   };
 
+  // Filter and sort positions
+  const filteredAndSortedPositions = useMemo(() => {
+    if (!accountState) return [];
+
+    let positions = [...accountState.positions];
+
+    // Apply side filter
+    if (filterSide !== 'all') {
+      positions = positions.filter((p) => p.side.toLowerCase() === filterSide);
+    }
+
+    // Apply sorting
+    positions.sort((a, b) => {
+      let compareValue = 0;
+
+      switch (sortBy) {
+        case 'symbol':
+          compareValue = a.symbol.localeCompare(b.symbol);
+          break;
+        case 'pnl':
+          compareValue = (a.uPnl || 0) - (b.uPnl || 0);
+          break;
+        case 'size':
+          compareValue = a.size - b.size;
+          break;
+        case 'entry':
+          compareValue = a.entryPrice - b.entryPrice;
+          break;
+      }
+
+      return sortOrder === 'asc' ? compareValue : -compareValue;
+    });
+
+    return positions;
+  }, [accountState, sortBy, sortOrder, filterSide]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 lg:h-screen lg:overflow-hidden">
       <div className="h-full lg:flex lg:flex-col lg:max-h-screen">
@@ -199,16 +241,31 @@ function App() {
                   </div>
                 ) : (
                   <div>
+                    {/* Position Filters */}
+                    <PositionFilters
+                      sortBy={sortBy}
+                      sortOrder={sortOrder}
+                      filterSide={filterSide}
+                      onSortByChange={setSortBy}
+                      onSortOrderChange={setSortOrder}
+                      onFilterSideChange={setFilterSide}
+                    />
+
                     <h2 className="text-xl lg:text-lg font-bold mb-3 lg:mb-2 text-gray-200">
-                      Open Positions ({accountState.positions.length})
+                      Open Positions ({filteredAndSortedPositions.length}{accountState.positions.length !== filteredAndSortedPositions.length ? ` of ${accountState.positions.length}` : ''})
                     </h2>
                     
-                    {/* Desktop: Grid 2-3 columns, Mobile: Stack */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-3">
-                      {accountState.positions.map((position, index) => (
-                        <PositionCard key={`${position.symbol}-${index}`} position={position} />
-                      ))}
-                    </div>
+                    {filteredAndSortedPositions.length === 0 ? (
+                      <div className="bg-gray-800 rounded-lg shadow-lg p-8 text-center">
+                        <p className="text-gray-400">No positions match the selected filters</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-3">
+                        {filteredAndSortedPositions.map((position, index) => (
+                          <PositionCard key={`${position.symbol}-${index}`} position={position} />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </>

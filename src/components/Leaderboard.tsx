@@ -104,8 +104,24 @@ export default function Leaderboard({ onAddressClick }: LeaderboardProps) {
 
       {/* Leaderboard Table */}
       {!loading && entries.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-400">No leaderboard data available</p>
+        <div className="text-center py-12 bg-gray-900/50 rounded-lg p-8">
+          <div className="text-gray-300 mb-4">
+            <svg className="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-lg font-semibold mb-2">Leaderboard Temporarily Unavailable</p>
+            <p className="text-sm text-gray-400 mb-4">
+              The Hyperliquid leaderboard API endpoint is currently not accessible.
+            </p>
+            <div className="text-xs text-gray-500 max-w-md mx-auto bg-gray-800 p-4 rounded">
+              <p className="mb-2"><strong>What you can do:</strong></p>
+              <ul className="text-left space-y-1">
+                <li>• Enter any Ethereum address to view their positions</li>
+                <li>• Use saved address chips for quick access</li>
+                <li>• Check back later - we'll update when the API is available</li>
+              </ul>
+            </div>
+          </div>
         </div>
       )}
 

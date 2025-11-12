@@ -1,4 +1,7 @@
 // Hyperliquid Leaderboard API integration
+// NOTE: The leaderboard endpoint is currently returning 422 errors
+// The API may not support this endpoint publicly or the format has changed
+// Keeping this code for when/if the endpoint becomes available
 
 const HYPERLIQUID_API_URL = 'https://api.hyperliquid.xyz/info';
 
